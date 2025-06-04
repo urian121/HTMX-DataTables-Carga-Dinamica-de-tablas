@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Implementando DataTables en Español</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" />
+  <style>
+    /* Estilos para el spinner de carga */
+    #loading-spinner {
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.8);
+      z-index: 1000;
+    }
+
+    /* Contenedor principal */
+    #content-table {
+      opacity: 1;
+      transition: all 0.3s ease-out;
+    }
+
+    /* Animaciones */
+    .fade-out {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+
+    .fade-in {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container mt-5">
+    <div class="row">
+      <div class="col-md-12">
+        <button class="btn btn-primary" 
+                hx-get="datos.html" 
+                hx-trigger="click" 
+                hx-target="#content-table" 
+                hx-swap="innerHTML transition:true">
+          Cargar datos
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Spinner de loading -->
+  <div id="loading-spinner" style="display:none;">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+    <div class="mt-2">Cargando datos...</div>
+  </div>
+
+  <div class="container mt-3 bg-light rounded-3" id="content-table">
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.datatables.net/2.0.3/js/dataTables.js"></script>
+  <script src="https://cdn.datatables.net/2.0.3/js/dataTables.bootstrap5.js"></script>
+  <link rel="stylesheet" href="https://cdn.datatables.net/2.0.3/css/dataTables.bootstrap5.css" />
+  <script src="https://unpkg.com/htmx.org@2.0.4"
+    integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
+    crossorigin="anonymous"></script>
+
+  <script>
+    // Configuración de DataTables
+    const dataTableConfig = {
+      pageLength: 10,
+      language: {
+        url: "https://cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json",
+      }
+    };
+
+    // Función para mostrar el spinner
+    function showSpinner() {
+      const spinner = document.getElementById('loading-spinner');
+      if (spinner) spinner.style.display = 'flex';
+    }
+
+    // Función para ocultar el spinner
+    function hideSpinner() {
+      const spinner = document.getElementById('loading-spinner');
+      if (spinner) spinner.style.display = 'none';
+    }
+
+    // Función para aplicar animación de salida
+    function applyFadeOut(element) {
+      if (!element) return;
+      element.classList.add('fade-out');
+      return new Promise(resolve => setTimeout(resolve, 300));
+    }
+
+    // Función para aplicar animación de entrada
+    function applyFadeIn(element) {
+      if (!element) return;
+      element.classList.remove('fade-out');
+      element.classList.add('fade-in');
+    }
+
+    // Evento antes de la petición
+    htmx.on("htmx:beforeRequest", (event) => {
+      showSpinner();
+      const content = document.getElementById('content-table');
+      if (content) applyFadeOut(content);
+    });
+
+    // Evento antes de insertar el contenido
+    htmx.on("htmx:beforeSwap", async (event) => {
+      const content = document.getElementById('content-table');
+      if (content) {
+        await applyFadeOut(content);
+      }
+    });
+
+    // Evento después de insertar el contenido
+    htmx.on("htmx:afterSwap", (event) => {
+      hideSpinner();
+      
+      const content = document.getElementById('content-table');
+      if (content) {
+        requestAnimationFrame(() => {
+          applyFadeIn(content);
+        });
+      }
+
+      // Inicializar DataTables si es necesario
+      if (event.detail.target.id === 'content-table') {
+        $('#tbl_empleados').DataTable(dataTableConfig);
+      }
+    });
+  </script>
+</body>
+
+</html>
