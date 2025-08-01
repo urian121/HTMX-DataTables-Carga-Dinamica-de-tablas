@@ -2,6 +2,8 @@
 
 Este proyecto demuestra cómo implementar una tabla dinámica usando HTMX y DataTables, con animaciones suaves y un sistema de loading elegante.
 
+![GIF de la demostración](https://raw.githubusercontent.com/urian121/imagenes-proyectos-github/refs/heads/master/cargar-data-desde-datatable-con-htmx.gif)
+
 ## 🚀 Características
 
 - Carga dinámica de datos usando HTMX
